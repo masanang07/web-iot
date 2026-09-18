@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Kontrol ESP32 Pro</title>
+    <!-- Kita pinjem library Paho MQTT -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.min.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; margin-top: 50px; background-color: #121212; color: white;}
+        button { padding: 15px 30px; font-size: 20px; margin: 10px; cursor: pointer; border-radius: 8px; border: none;}
+        #btnOn { background-color: #4CAF50; color: white; }
+        #btnOff { background-color: #f44336; color: white; }
+    </style>
+</head>
+<body>
+    <h2>Web Dashboard Keren</h2>
+    <p>Status: <span id="status" style="color: yellow;">Connecting...</span></p>
+    
+    <button id="btnOn" onclick="sendMsg('ON')">Nyalakan</button>
+    <button id="btnOff" onclick="sendMsg('OFF')">Matikan</button>
+
+    <script>
+        // Konek lewat WebSocket (Port 8000 buat HiveMQ, beda sama 1883 buat ESP)
+        var client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "WebClient_" + parseInt(Math.random() * 100, 10));
+
+        client.onConnectionLost = function (responseObject) {
+            document.getElementById("status").innerHTML = "Terputus!";
+            document.getElementById("status").style.color = "red";
+        };
+
+        client.connect({
+            onSuccess: function () {
+                document.getElementById("status").innerHTML = "Connected!";
+                document.getElementById("status").style.color = "#4CAF50";
+            }
+        });
+
+        // Fungsi buat nembak payload ke MQTT
+        function sendMsg(command) {
+            var message = new Paho.MQTT.Message(command);
+            message.destinationName = "uny/proyek/esp32/kontrol"; // Topik harus sama persis kayak di ESP
+            client.send(message);
+        }
+    </script>
+</body>
+</html>
